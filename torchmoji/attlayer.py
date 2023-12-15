@@ -55,7 +55,10 @@ class Attention(Module):
         mask = Variable((idxes < input_lengths.unsqueeze(1)).float())
 
         # apply mask and renormalize attention scores (weights)
-        masked_weights = unnorm_ai * mask
+        if self.attention_vector.device.type == "cuda":
+            masked_weights = unnorm_ai * mask.cuda()
+        else:
+            masked_weights = unnorm_ai * mask
         att_sums = masked_weights.sum(dim=1, keepdim=True)  # sums per sequence
         attentions = masked_weights.div(att_sums)
 
