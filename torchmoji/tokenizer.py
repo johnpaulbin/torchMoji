@@ -36,7 +36,7 @@ TITLES = [
     r'Prof\.',
     ]
 # Ensure case insensitivity
-RE_TITLES = r'|'.join([r'(?i)' + t for t in TITLES])
+RE_TITLES = r'|'.join(TITLES)
 
 # Symbols have to be created as separate patterns in order to match consecutive
 # identical symbols.
@@ -109,11 +109,9 @@ for s in EMOTICONS_START:
 # requires ucs4 in python2.7 or python3+
 # RE_EMOJI = r"""[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF]"""
 # safe for all python
-# Requires Python 3.3 or higher for Unicode property support
+RE_EMOJI = r"""\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f\ude80-\udeff]|[\u2600-\u26FF\u2700-\u27BF]"""
 
-RE_EMOJI = r'[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U0001FB00-\U0001FBFF\U0001FC00-\U0001FCFF\U0001FD00-\U0001FDFF\U0001FE00-\U0001FEFF\U0001FF00-\U0001FFFF]'
-
-# Rest of the code remains the same
+# List of matched token patterns, ordered from most specific to least specific.
 TOKENS = [
     RE_URL,
     RE_EMAIL,
@@ -139,4 +137,20 @@ IGNORED = [
 
 # Final pattern
 RE_PATTERN = re.compile(r'|'.join(IGNORED) + r'|(' + r'|'.join(TOKENS) + r')',
-                        re.UNICODE)
+                        re.UNICODE | re.IGNORECASE)
+
+
+def tokenize(text):
+    '''Splits given input string into a list of tokens.
+
+    # Arguments:
+        text: Input string to be tokenized.
+
+    # Returns:
+        List of strings (tokens).
+    '''
+    result = RE_PATTERN.findall(text)
+
+    # Remove empty strings
+    result = [t for t in result if t.strip()]
+    return result
